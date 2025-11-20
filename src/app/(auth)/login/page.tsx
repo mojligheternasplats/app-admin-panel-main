@@ -76,20 +76,27 @@ export default function LoginPage() {
         throw new Error('Login failed: No token received.');
       }
     } catch (error: any) {
-      console.error(error);
-      const msg = String(error?.message || "");
+  console.error(error);
+  const msg = String(error?.message || "");
 
-      toast({
-        variant: 'destructive',
-        title: 'Login Failed',
-        description: msg.includes("401") || msg.toLowerCase().includes("unauthorized")
-          ? 'Invalid email or password.'
-          : 'An unexpected error occurred.',
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  let description = "An unexpected error occurred.";
+
+  if (msg.includes("EMAIL_NOT_FOUND")) {
+    description = "This email is not registered.";
+  } else if (msg.includes("WRONG_PASSWORD")) {
+    description = "The password you entered is incorrect.";
+  } else {
+    description = "Invalid email or password.";
   }
+
+  toast({
+    variant: 'destructive',
+    title: 'Login Failed',
+    description,
+  });
+} finally {
+      setIsLoading(false);
+    }}
 
   return (
     <Card className="w-full max-w-md">
