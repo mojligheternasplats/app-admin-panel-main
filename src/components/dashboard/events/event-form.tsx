@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -49,6 +48,7 @@ const formSchema = z.object({
   location: z.string().min(2, { message: "Location must be at least 2 characters." }),
   startDate: z.date(),
   isPublished: z.boolean(),
+  openForRegistration: z.boolean(),
   language: z.enum(['Swedish', 'English']),
 });
 
@@ -56,6 +56,7 @@ export function EventForm({ isOpen, setIsOpen, event, onSave }: EventFormProps) 
   const [isGeneratingSlug, setIsGeneratingSlug] = React.useState(false);
   const [isClient, setIsClient] = React.useState(false);
   const { toast } = useToast();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -65,6 +66,7 @@ export function EventForm({ isOpen, setIsOpen, event, onSave }: EventFormProps) 
       location: event?.location || '',
       startDate: event ? new Date(event.startDate) : new Date(),
       isPublished: event?.isPublished || false,
+      openForRegistration: event?.openForRegistration || false,
       language: event?.language || 'English',
     },
   });
@@ -82,33 +84,33 @@ export function EventForm({ isOpen, setIsOpen, event, onSave }: EventFormProps) 
         location: event?.location || '',
         startDate: event ? new Date(event.startDate) : new Date(),
         isPublished: event?.isPublished || false,
+        openForRegistration: event?.openForRegistration || false,
         language: event?.language || 'English',
       });
     }
   }, [event, form, isOpen]);
 
+
   const handleGenerateSlug = async () => {
     const title = form.getValues('title');
     if (!title) return;
+
     setIsGeneratingSlug(true);
+
     try {
       const result = await api.post('generate-slug', { title });
-      if (result) {
+      if (result?.slug) {
         form.setValue('slug', result.slug);
       } else {
-        toast({
-          variant: 'destructive',
-          title: "Slug generation failed.",
-        });
+        toast({ variant: 'destructive', title: "Slug generation failed." });
       }
-    } catch (error) {
-       toast({
-        variant: 'destructive',
-        title: "Slug generation failed.",
-      });
+    } catch {
+      toast({ variant: 'destructive', title: "Slug generation failed." });
     }
+
     setIsGeneratingSlug(false);
   };
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -116,7 +118,9 @@ export function EventForm({ isOpen, setIsOpen, event, onSave }: EventFormProps) 
         ...values,
         startDate: values.startDate.toISOString(),
       };
+
       let savedEvent: Event;
+
       if (event?.id) {
         savedEvent = await api.put(`events/${event.id}`, payload);
         toast({ title: "Event updated successfully." });
@@ -124,12 +128,17 @@ export function EventForm({ isOpen, setIsOpen, event, onSave }: EventFormProps) 
         savedEvent = await api.post('events', payload);
         toast({ title: "Event created successfully." });
       }
+
       onSave(savedEvent);
       setIsOpen(false);
+
     } catch (error) {
-       toast({ variant: "destructive", title: "Operation failed." });
+      toast({ variant: "destructive", title: "Operation failed." });
     }
   }
+
+
+  // ---------------- ACCORDION SECTIONS --------------------
 
   const formSections: AccordionItemData[] = [
     {
@@ -138,19 +147,20 @@ export function EventForm({ isOpen, setIsOpen, event, onSave }: EventFormProps) 
       icon: <FileText className="h-5 w-5" />,
       content: (
         <div className="space-y-4">
+          {/* TITLE */}
           <FormField
             control={form.control}
             name="title"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Title</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
+                <FormControl><Input {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+
+          {/* SLUG */}
           <FormField
             control={form.control}
             name="slug"
@@ -158,87 +168,93 @@ export function EventForm({ isOpen, setIsOpen, event, onSave }: EventFormProps) 
               <FormItem>
                 <FormLabel>Slug</FormLabel>
                 <div className="flex gap-2">
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <Button type="button" variant="outline" onClick={handleGenerateSlug} disabled={isGeneratingSlug}>
+                  <FormControl><Input {...field} /></FormControl>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleGenerateSlug}
+                    disabled={isGeneratingSlug}
+                  >
                     {isGeneratingSlug ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating...
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...
                       </>
-                    ) : (
-                      "Generate Slug"
-                    )}
+                    ) : "Generate Slug"}
                   </Button>
                 </div>
                 <FormMessage />
               </FormItem>
             )}
           />
+
         </div>
       )
     },
+
     {
       value: "event-specifics",
       trigger: "Event Specifics",
       icon: <MapPin className="h-5 w-5" />,
       content: (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
+
+          {/* LOCATION */}
+          <FormField
             control={form.control}
             name="location"
             render={({ field }) => (
-                <FormItem>
+              <FormItem>
                 <FormLabel>Location</FormLabel>
-                <FormControl>
-                    <Input {...field} />
-                </FormControl>
+                <FormControl><Input {...field} /></FormControl>
                 <FormMessage />
-                </FormItem>
+              </FormItem>
             )}
-            />
-            <FormField
+          />
+
+          {/* DATE PICKER */}
+          <FormField
             control={form.control}
             name="startDate"
             render={({ field }) => (
-                <FormItem className="flex flex-col">
+              <FormItem className="flex flex-col">
                 <FormLabel>Date</FormLabel>
+
                 <Popover>
-                    <PopoverTrigger asChild>
+                  <PopoverTrigger asChild>
                     <FormControl>
-                        <Button
+                      <Button
                         variant={'outline'}
                         className={cn(
-                            'w-full pl-3 text-left font-normal',
-                            !field.value && 'text-muted-foreground'
+                          'w-full pl-3 text-left font-normal',
+                          !field.value && 'text-muted-foreground'
                         )}
-                        >
-                        {field.value && isClient ? (
-                            format(field.value, 'PPP')
-                        ) : (
-                            <span>Pick a date</span>
-                        )}
+                      >
+                        {field.value && isClient ? format(field.value, 'PPP') : "Pick a date"}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
+                      </Button>
                     </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                  </PopoverTrigger>
+
+                  <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      initialFocus
                     />
-                    </PopoverContent>
+                  </PopoverContent>
                 </Popover>
+
                 <FormMessage />
-                </FormItem>
+              </FormItem>
             )}
-            />
+          />
+
         </div>
       )
     },
+
     {
       value: "content-media",
       trigger: "Content",
@@ -261,28 +277,41 @@ export function EventForm({ isOpen, setIsOpen, event, onSave }: EventFormProps) 
         </div>
       )
     },
+
     {
       value: "publish-settings",
       trigger: "Publish Settings",
       icon: <Settings className="h-5 w-5" />,
       content: (
-        <FormField
-          control={form.control}
-          name="isPublished"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-              <div className="space-y-0.5">
+        <div className="space-y-4">
+          {/* PUBLISHED */}
+          <FormField
+            control={form.control}
+            name="isPublished"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                 <FormLabel>Published</FormLabel>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
+          {/* OPEN FOR REGISTRATION */}
+          <FormField
+            control={form.control}
+            name="openForRegistration"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                <FormLabel>Open for Registration</FormLabel>
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
       )
     }
   ];
@@ -291,21 +320,25 @@ export function EventForm({ isOpen, setIsOpen, event, onSave }: EventFormProps) 
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[625px]">
         <DialogHeader>
-          <DialogTitle>
-            {event ? "Edit Event" : "Add Event"}
-          </DialogTitle>
+          <DialogTitle>{event ? "Edit Event" : "Add Event"}</DialogTitle>
         </DialogHeader>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+
             <AdvancedAccordion items={formSections} defaultValue="main-details" />
+
             <DialogFooter>
               <DialogClose asChild>
-                <Button type="button" variant="secondary">Cancel</Button>
+                <Button variant="secondary" type="button">Cancel</Button>
               </DialogClose>
+
               <Button type="submit">Save</Button>
             </DialogFooter>
+
           </form>
         </Form>
+
       </DialogContent>
     </Dialog>
   );

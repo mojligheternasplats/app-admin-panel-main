@@ -47,28 +47,32 @@ export default function ProfilePage() {
     },
   });
 
-  React.useEffect(() => {
-    async function fetchProfile() {
-      setIsFetching(true);
-      try {
-        const user: User = await api.get('auth/profile');
-        form.reset({
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-        });
-      } catch (error) {
-        toast({
-          variant: 'destructive',
-          title: 'Failed to load profile',
-          description: 'Could not fetch your profile data. Please try again.',
-        });
-      } finally {
-        setIsFetching(false);
-      }
+React.useEffect(() => {
+  async function fetchProfile() {
+    setIsFetching(true);
+
+    try {
+      const user = await api.get<User>("auth/me");
+
+      form.reset({
+        firstName: user.firstName ?? "",
+        lastName: user.lastName ?? "",
+        email: user.email ?? "",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Failed to load profile",
+        description: "Could not fetch your profile data. Please try again.",
+      });
+    } finally {
+      setIsFetching(false);
     }
-    fetchProfile();
-  }, [form, toast]);
+  }
+
+  fetchProfile();
+}, [form, toast]);
+
 
   async function onSubmit(values: z.infer<typeof profileFormSchema>) {
     setIsLoading(true);

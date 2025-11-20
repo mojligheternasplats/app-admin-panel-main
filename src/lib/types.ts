@@ -113,7 +113,7 @@ export interface Event {
   createdAt: string;
   updatedAt: string;
   createdById?: string;
-
+ openForRegistration: boolean;
   creator?: User;
   media?: Media[];
 }

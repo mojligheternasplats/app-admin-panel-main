@@ -39,7 +39,8 @@ async function request<T>(
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
-    credentials: "include",
+    // REMOVE this unless backend uses cookies
+    // credentials: "include",
   });
 
   if (!res.ok) {
@@ -53,6 +54,7 @@ async function request<T>(
 
   return res.json();
 }
+
 
 
 // 🔧 CRUD helpers
