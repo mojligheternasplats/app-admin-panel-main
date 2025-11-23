@@ -31,7 +31,7 @@ export function EventDataTable({ data: initialData }: DataTableProps) {
   const { toast } = useToast();
   const router = useRouter();
 
-
+console.log("Fetched Events:", data);
   React.useEffect(() => {
     setData(initialData);
   }, [initialData]);

@@ -18,7 +18,6 @@ import { api } from '@/lib/api';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
 
@@ -30,17 +29,17 @@ interface UploadMediaModalProps {
 
 /* SCHEMAS */
 const fileSchema = z.object({
-  file: z.instanceof(File, { message: 'An image file is required.' }),
-  title: z.string().optional(),
+  file: z.instanceof(File, { message: 'A file is required.' }),
   altText: z.string().optional(),
-  description: z.string().optional(),
+  mediaType: z.enum(['IMAGE', 'VIDEO', 'DOCUMENT']),
+  entityType: z.enum(['NEWS', 'EVENT', 'PROJECT', 'PARTNER', 'GALLERY_COMPONENT'])
 });
 
 const urlSchema = z.object({
   url: z.string().url({ message: 'Please enter a valid URL.' }),
-  title: z.string().optional(),
   altText: z.string().optional(),
-  description: z.string().optional(),
+  mediaType: z.enum(['IMAGE', 'VIDEO', 'DOCUMENT']),
+  entityType: z.enum(['NEWS', 'EVENT', 'PROJECT', 'PARTNER', 'GALLERY_COMPONENT'])
 });
 
 type Tab = 'file' | 'url';
@@ -51,14 +50,14 @@ export function UploadMediaModal({ isOpen, onOpenChange, onSuccess }: UploadMedi
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [filePreview, setFilePreview] = React.useState<string | null>(null);
 
-  /* FIXED: defaultValues prevent uncontrolled → controlled warning */
+  /* Forms */
   const fileForm = useForm<z.infer<typeof fileSchema>>({
     resolver: zodResolver(fileSchema),
     defaultValues: {
       file: undefined,
-      title: '',
       altText: '',
-      description: '',
+      mediaType: 'IMAGE',
+      entityType: 'GALLERY_COMPONENT',  // default
     },
   });
 
@@ -66,9 +65,9 @@ export function UploadMediaModal({ isOpen, onOpenChange, onSuccess }: UploadMedi
     resolver: zodResolver(urlSchema),
     defaultValues: {
       url: '',
-      title: '',
       altText: '',
-      description: '',
+      mediaType: 'IMAGE',
+      entityType: 'GALLERY_COMPONENT',  // default
     },
   });
 
@@ -96,50 +95,75 @@ export function UploadMediaModal({ isOpen, onOpenChange, onSuccess }: UploadMedi
   };
 
   /* FILE UPLOAD */
-  async function onFileSubmit(values: z.infer<typeof fileSchema>) {
+async function onFileSubmit(values: z.infer<typeof fileSchema>) {
   try {
-    let savedMedia: Media;
+    setIsSubmitting(true);
 
+    // ❌ STOP if file is missing
+    if (!values.file) {
+      toast({ variant: "destructive", title: "A file is required." });
+      return;
+    }
+
+    // ❌ STOP if mediaType is missing
+    if (!values.mediaType) {
+      toast({ variant: "destructive", title: "Media type is required." });
+      return;
+    }
+
+    // ❌ STOP if entityType is missing
+    if (!values.entityType) {
+      toast({ variant: "destructive", title: "Entity type is required." });
+      return;
+    }
+
+    // Build FormData
     const formData = new FormData();
-    formData.append('file', values.file);
-    formData.append('title', values.title ?? "");
-    formData.append('altText', values.altText ?? "");
-    formData.append('description', values.description ?? "");
+    formData.append("file", values.file);
+    formData.append("altText", values.altText ?? "");
+    formData.append("mediaType", values.mediaType);
+    formData.append("entityType", values.entityType);
 
-    savedMedia = await api.post('media/file', formData, true);
+    // Log for debugging (optional)
+    for (const [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
+
+    // 🚀 SEND to API
+    const savedMedia: Media = await api.post("media/file", formData, true);
 
     toast({ title: "Media uploaded." });
+
     onSuccess(savedMedia);
     handleClose();
 
   } catch (error) {
+    console.error("Upload error:", error);
     toast({ variant: "destructive", title: "Upload failed." });
+  } finally {
+    setIsSubmitting(false);
   }
 }
-
 
   /* URL UPLOAD */
- async function onUrlSubmit(values: z.infer<typeof urlSchema>) {
-  try {
-    let savedMedia: Media;
+  async function onUrlSubmit(values: z.infer<typeof urlSchema>) {
+    try {
+      setIsSubmitting(true);
+      const savedMedia: Media = await api.post('media/url', {
+        url: values.url,
+        altText: values.altText ?? '',
+        mediaType: values.mediaType,
+      });
 
-    savedMedia = await api.post('media/url', {
-      url: values.url,
-      title: values.title || "",
-      altText: values.altText || "",
-      description: values.description || "",
-    });
-   
-
-    toast({ title: "Media added." });
-    onSuccess(savedMedia);
-    handleClose();
-
-  } catch (error) {
-    toast({ variant: "destructive", title: "Upload failed." });
+      toast({ title: 'Media added.' });
+      onSuccess(savedMedia);
+      handleClose();
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Upload failed.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
-}
-
 
   const currentForm = activeTab === 'file' ? fileForm : urlForm;
   const currentSubmit = activeTab === 'file' ? onFileSubmit : onUrlSubmit;
@@ -151,9 +175,8 @@ export function UploadMediaModal({ isOpen, onOpenChange, onSuccess }: UploadMedi
           <DialogTitle>Add Media</DialogTitle>
         </DialogHeader>
 
-        <FormProvider {...currentForm}>
-          <form onSubmit={currentForm.handleSubmit(currentSubmit  as any)}>
-
+        <FormProvider {...(currentForm as any)}>
+          <form onSubmit={currentForm.handleSubmit(currentSubmit as any)}>
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as Tab)} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="file">Upload File</TabsTrigger>
@@ -167,13 +190,12 @@ export function UploadMediaModal({ isOpen, onOpenChange, onSuccess }: UploadMedi
                   name="file"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Image File</FormLabel>
+                      <FormLabel>File</FormLabel>
                       <FormControl>
                         <Input
                           type="file"
-                          accept="image/*"
+                          accept="image/*,video/*"
                           onChange={(e) => field.onChange(e.target.files?.[0])}
-                          className="pt-2 text-sm file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-foreground hover:file:bg-primary/90"
                         />
                       </FormControl>
                       <FormMessage />
@@ -187,13 +209,12 @@ export function UploadMediaModal({ isOpen, onOpenChange, onSuccess }: UploadMedi
                   </div>
                 )}
 
-                {/* OPTIONAL FIELDS */}
                 <FormField
                   control={fileForm.control}
-                  name="title"
+                  name="altText"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Title</FormLabel>
+                      <FormLabel>Alt Text</FormLabel>
                       <FormControl>
                         <Input {...field} value={field.value ?? ''} />
                       </FormControl>
@@ -203,30 +224,38 @@ export function UploadMediaModal({ isOpen, onOpenChange, onSuccess }: UploadMedi
 
                 <FormField
                   control={fileForm.control}
-                  name="altText"
+                  name="mediaType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Alt Text</FormLabel>
+                      <FormLabel>Media Type</FormLabel>
                       <FormControl>
-                        <Textarea {...field} value={field.value ?? ''} />
+                        <select {...field} className="border rounded p-2">
+                          <option value="IMAGE">Image</option>
+                          <option value="VIDEO">Video</option>
+                          <option value="DOCUMENT">Document</option>
+                        </select>
                       </FormControl>
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={fileForm.control}
-                  name="description"
+                  name="entityType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel>Entity Type</FormLabel>
                       <FormControl>
-                        <Textarea {...field} value={field.value ?? ''} />
+                        <select {...field} className="border rounded p-2">
+                          <option value="GALLERY_COMPONENT">Gallery</option>
+                          <option value="NEWS">News</option>
+                          <option value="EVENT">Event</option>
+                          <option value="PROJECT">Project</option>
+                          <option value="PARTNER">Partner</option>
+                        </select>
                       </FormControl>
                     </FormItem>
                   )}
                 />
-
               </TabsContent>
 
               {/* URL TAB */}
@@ -252,18 +281,8 @@ export function UploadMediaModal({ isOpen, onOpenChange, onSuccess }: UploadMedi
                   </div>
                 )}
 
-                <FormField
-                  control={urlForm.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Title</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value ?? ''} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+
+
 
                 <FormField
                   control={urlForm.control}
@@ -272,24 +291,51 @@ export function UploadMediaModal({ isOpen, onOpenChange, onSuccess }: UploadMedi
                     <FormItem>
                       <FormLabel>Alt Text</FormLabel>
                       <FormControl>
-                        <Textarea {...field} value={field.value ?? ''} />
+                        <Input {...field} value={field.value ?? ''} />
                       </FormControl>
                     </FormItem>
                   )}
                 />
+                <div className="flex gap-4">
+                  <FormField
+                    control={fileForm.control}
+                    name="mediaType"
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormLabel>Media Type</FormLabel>
+                        <FormControl>
+                          <select {...field} className="w-full border rounded p-2">
+                            <option value="IMAGE">Image</option>
+                            <option value="VIDEO">Video</option>
+                            <option value="DOCUMENT">Document</option>
+                          </select>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={urlForm.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} value={field.value ?? ''} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={fileForm.control}
+                    name="entityType"
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormLabel>Entity Type</FormLabel>
+                        <FormControl>
+                          <select {...field} className="w-full border rounded p-2">
+                            <option value="GALLERY_COMPONENT">Gallery</option>
+                            <option value="NEWS">News</option>
+                            <option value="EVENT">Event</option>
+                            <option value="PROJECT">Project</option>
+                            <option value="PARTNER">Partner</option>
+                          </select>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+
+
               </TabsContent>
             </Tabs>
 

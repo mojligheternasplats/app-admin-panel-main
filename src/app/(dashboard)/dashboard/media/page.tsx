@@ -5,7 +5,7 @@ import { MediaDataTable } from '@/components/dashboard/media/data-table';
 async function getMedia() {
   try {
     const media: Media[] = await api.get('media/all');
-     console.log("media",media)
+    
     return media;
   } catch (error) {
     console.error("Failed to fetch media", error);

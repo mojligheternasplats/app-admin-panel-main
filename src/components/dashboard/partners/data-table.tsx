@@ -27,7 +27,7 @@ export function PartnerDataTable({ data: initialData }: { data: Partner[] }) {
   const [selectedPartner, setSelectedPartner] = React.useState<Partner | null>(null);
   const { toast } = useToast();
   const router = useRouter();
-
+      console.log("partner log:", data);
   React.useEffect(() => {
     setData(initialData);
   }, [initialData]);

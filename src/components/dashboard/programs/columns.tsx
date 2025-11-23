@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Project } from '@/lib/admin-types';
+import { Project } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
@@ -64,6 +64,7 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Project, 
     header: () => <div className="text-right">Actions</div>,
     cell: ({ row }) => {
       const project = row.original;
+
       return (
         <div className="text-right">
           <AlertDialog>

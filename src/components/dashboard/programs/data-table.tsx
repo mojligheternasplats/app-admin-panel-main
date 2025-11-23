@@ -28,7 +28,7 @@ export function ProgramDataTable({ data: initialData }: { data: Project[] }) {
   const [selectedProgram, setSelectedProgram] = React.useState<Project | null>(null);
   const { toast } = useToast();
   const router = useRouter();
-
+  console.log("Fetched Projects:", data);
   React.useEffect(() => {
     setData(initialData);
   }, [initialData]);
@@ -39,7 +39,7 @@ export function ProgramDataTable({ data: initialData }: { data: Project[] }) {
     );
   }, [data, filter]);
 
- const sortedData = React.useMemo(() => {
+  const sortedData = React.useMemo(() => {
     let sortableItems = [...filteredData];
     if (sortConfig !== null) {
       sortableItems.sort((a, b) => {
@@ -57,7 +57,7 @@ export function ProgramDataTable({ data: initialData }: { data: Project[] }) {
     return sortableItems;
   }, [filteredData, sortConfig]);
 
-  
+
   const requestSort = (key: keyof Project) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
@@ -75,7 +75,7 @@ export function ProgramDataTable({ data: initialData }: { data: Project[] }) {
     setSelectedProgram(null);
     setIsFormOpen(true);
   };
-  
+
   const handleDelete = async (id: string) => {
     try {
       await api.del(`projects/${id}`);
@@ -108,7 +108,7 @@ export function ProgramDataTable({ data: initialData }: { data: Project[] }) {
           className="max-w-sm"
         />
         <div className="ml-auto flex items-center gap-2">
-            <Button onClick={handleAddNew}>Add Program</Button>
+          <Button onClick={handleAddNew}>Add Program</Button>
         </div>
       </div>
       <Card>
@@ -123,13 +123,24 @@ export function ProgramDataTable({ data: initialData }: { data: Project[] }) {
                 ))}
               </TableRow>
             </TableHeader>
-      
+            <TableBody>
+              {sortedData.map((row, rowIndex) => (
+                <TableRow key={row.id ?? rowIndex}>
+                  {tableColumns.map((column, colIndex) => (
+                    <TableCell key={colIndex}>
+                      {column.cell({ row: { original: row, getValue: (key: string) => (row as any)[key] } })}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+
           </Table>
         </CardContent>
       </Card>
-      
-      <ProgramForm 
-        isOpen={isFormOpen} 
+
+      <ProgramForm
+        isOpen={isFormOpen}
         setIsOpen={setIsFormOpen}
         program={selectedProgram}
         onSave={handleFormSave}

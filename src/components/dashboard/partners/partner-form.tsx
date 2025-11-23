@@ -101,19 +101,7 @@ export function PartnerForm({ isOpen, setIsOpen, partner, onSave }: PartnerFormP
     }
   }, [partner, form, isOpen]);
 
-  const handleGenerateSlug = async () => {
-    const name = form.getValues('name');
-    if (!name) return;
-    setIsGeneratingSlug(true);
-    try {
-      const result = await api.post('generate-slug', { title: name });
-      if (result.success) form.setValue('slug', result.slug);
-      else throw new Error("Failed");
-    } catch {
-      toast({ variant: 'destructive', title: "Slug generation failed." });
-    }
-    setIsGeneratingSlug(false);
-  };
+
 
 async function onSubmit(values: z.infer<typeof formSchema>) {
   setIsSubmitting(true);
@@ -231,9 +219,7 @@ async function onSubmit(values: z.infer<typeof formSchema>) {
               <FormLabel>Slug</FormLabel>
               <div className="flex gap-2">
                 <FormControl><Input {...field} disabled={isSubmitting} /></FormControl>
-                <Button type="button" variant="outline" onClick={handleGenerateSlug} disabled={isGeneratingSlug || isSubmitting}>
-                  {isGeneratingSlug ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Generating...</> : "Generate"}
-                </Button>
+              
               </div>
               <FormMessage />
             </FormItem>

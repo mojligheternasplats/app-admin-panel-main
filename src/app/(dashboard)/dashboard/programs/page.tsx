@@ -5,6 +5,7 @@ import { Project } from '@/lib/types';
 async function getPrograms(): Promise<Project[]> {
   try {
     const response = await api.getAll<Project>('projects'); // ✅ Fetch from API
+     // ✅ Log fetched data
     return response.data; // ✅ Extract items
   } catch (error) {
     console.error("Failed to fetch Project", error);

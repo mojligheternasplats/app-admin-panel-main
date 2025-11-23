@@ -31,9 +31,9 @@ interface MediaEditFormProps {
 
 
 const formSchema = z.object({
-  title: z.string().optional(),
+
   altText: z.string().optional(),
-  description: z.string().optional(),
+
 });
 
 export function MediaEditForm({ isOpen, onOpenChange, media, onSuccess }: MediaEditFormProps) {
@@ -43,25 +43,25 @@ export function MediaEditForm({ isOpen, onOpenChange, media, onSuccess }: MediaE
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-    title: '',
-    altText: '',
-    description: '',
-  }
+
+      altText: '',
+
+    }
   });
-  
+
   React.useEffect(() => {
     if (media) {
       form.reset({
-        title: media.title || '',
+
         altText: media.altText || '',
-        description: media.description || '',
+
       });
     }
   }, [media, form]);
 
 
   if (!media) return null;
-  
+
   const handleClose = () => {
     if (isSubmitting) return;
     form.reset();
@@ -91,18 +91,18 @@ export function MediaEditForm({ isOpen, onOpenChange, media, onSuccess }: MediaE
         </DialogHeader>
         <FormProvider {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-             <div className="mt-2 relative w-full aspect-video rounded-md overflow-hidden border">
-                <Image src={media.url} alt={media.altText || "Media preview"} layout="fill" objectFit="contain" />
+            <div className="mt-2 relative w-full aspect-video rounded-md overflow-hidden border">
+              <Image src={media.url} alt={media.altText || "Media preview"} layout="fill" objectFit="contain" />
             </div>
-            <FormField control={form.control} name="title" render={({ field }) => <FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} />
+
             <FormField control={form.control} name="altText" render={({ field }) => <FormItem><FormLabel>Alt Text</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="description" render={({ field }) => <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>} />
-             <DialogFooter>
-                <Button type="button" variant="secondary" onClick={handleClose} disabled={isSubmitting}>Cancel</Button>
-                <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Save Changes
-                </Button>
+
+            <DialogFooter>
+              <Button type="button" variant="secondary" onClick={handleClose} disabled={isSubmitting}>Cancel</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Changes
+              </Button>
             </DialogFooter>
           </form>
         </FormProvider>

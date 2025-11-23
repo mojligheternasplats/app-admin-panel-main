@@ -1,20 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { generateSlug } from "@/ai/flows/generate-slug-from-title";
+
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // 🔑 Slug generator
-export async function generateSlugAction(title: string) {
-  try {
-    const { slug } = await generateSlug({ title });
-    return { success: true, slug };
-  } catch (error) {
-    console.error(error);
-    return { success: false, slug: "" };
-  }
-}
 
 // 🔧 Create / Update
 async function handleDataMutation(formData: FormData, model: string, token: string) {

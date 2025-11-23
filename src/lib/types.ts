@@ -144,8 +144,6 @@ export interface Media {
   url: string;
   publicId?: string | null; // Cloudinary public ID
   mediaType: MediaType;
-  title?: string | null;
-  description?: string | null;
   altText?: string | null;
   createdAt: string;
   updatedAt: string;
