@@ -8,7 +8,7 @@ import { Users } from 'lucide-react';
 
 async function getEventAttendances(): Promise<EventAttendance[]> {
   try {
-    const response = await api.get('eventAttendance');
+    const response: any = await api.get('eventAttendance');
 
     console.log("Fetched Event Attendance:", response);
 
