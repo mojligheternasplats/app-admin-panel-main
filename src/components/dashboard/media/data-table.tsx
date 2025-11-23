@@ -133,7 +133,7 @@ const [assignableEntities, setAssignableEntities] = React.useState<{
     router.refresh();
   }
 
-  const tableColumns = columns({ onEdit: handleEdit, onDelete: handleDelete, onAssign: handleAssign });
+  const tableColumns = columns({onDelete: handleDelete, onAssign: handleAssign });
 
   return (
     <div>

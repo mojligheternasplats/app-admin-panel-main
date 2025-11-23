@@ -2,12 +2,23 @@
 
 import { revalidatePath } from "next/cache";
 
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-// 🔑 Slug generator
+/**
+ * Simple fallback slug generator
+ */
+function generateSlug(text: string) {
+  return text
+    .normalize("NFKD")
+    .replace(/[^\w\s-]/g, "")  // remove special chars
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-");     // replace spaces with hyphens
+}
 
-// 🔧 Create / Update
+/**
+ * Handle create/update mutation with FormData
+ */
 async function handleDataMutation(formData: FormData, model: string, token: string) {
   const id = formData.get("id") as string | null;
 
@@ -16,11 +27,17 @@ async function handleDataMutation(formData: FormData, model: string, token: stri
   const method = id ? "PUT" : "POST";
   const url = id ? `${API_URL}/${model}/${id}` : `${API_URL}/${model}`;
 
+  // If slug is missing, auto-generate one
+  const title = formData.get("title") as string | null;
+  if (title && !formData.get("slug")) {
+    formData.set("slug", generateSlug(title));
+  }
+
   const res = await fetch(url, {
     method,
-    body: formData, // ✅ Send FormData directly
+    body: formData,
     headers: {
-      Authorization: `Bearer ${token}`, // ✅ Correct way to send token
+      Authorization: `Bearer ${token}`,
     },
   });
 
@@ -32,20 +49,19 @@ async function handleDataMutation(formData: FormData, model: string, token: stri
   return res.json();
 }
 
-
-
 export async function createOrUpdateAction(formData: FormData, token: string) {
   const model = formData.get("model") as string;
   if (!model) throw new Error("Model is required in formData");
 
   return handleDataMutation(formData, model, token);
 }
-// 🔧 Delete
+
+/**
+ * DELETE handler
+ */
 async function handleDelete(formData: FormData, model: string) {
-   
   const id = formData.get("id") as string;
   const token = formData.get("token") as string | null;
- console.log("token",token)
 
   if (!id) throw new Error("ID is required for delete");
 
@@ -64,11 +80,10 @@ async function handleDelete(formData: FormData, model: string) {
   }
 
   const result = await res.json();
-  revalidatePath(`/dashboard/${model}`);
 
+  revalidatePath(`/dashboard/${model}`);
   return result;
 }
-
 
 export async function deleteAction(formData: FormData) {
   const model = formData.get("model") as string;

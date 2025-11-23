@@ -33,12 +33,11 @@ type ColumnDef<TData, TValue> = {
 }
 
 interface ColumnsProps {
-  onEdit: (media: Media) => void;
   onDelete: (id: string) => void;
   onAssign: (media: Media) => void;
 }
 
-export const columns = ({ onEdit, onDelete, onAssign }: ColumnsProps): ColumnDef<Media, any>[] => [
+export const columns = ({onDelete, onAssign }: ColumnsProps): ColumnDef<Media, any>[] => [
   {
     accessorKey: 'url',
     header: () => 'Preview',
@@ -97,10 +96,7 @@ export const columns = ({ onEdit, onDelete, onAssign }: ColumnsProps): ColumnDef
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEdit(media)}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit
-                </DropdownMenuItem>
+       
                 <DropdownMenuItem onClick={() => onAssign(media)}>
                     <Link2 className="mr-2 h-4 w-4" />
                     Assign
