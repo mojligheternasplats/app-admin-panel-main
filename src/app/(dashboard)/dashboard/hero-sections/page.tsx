@@ -15,7 +15,8 @@ async function getHeroSections() {
 
 export default async function HeroSectionsPage() {
   const data = await getHeroSections();
-  console.log(data)
+ 
+ 
 
   return (
     <div className="flex flex-col gap-8">

@@ -5,6 +5,7 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { NAV_SLUGS } from "@/lib/constants/navSlugs";
 import {
   Dialog,
   DialogContent,
@@ -50,7 +51,7 @@ const formSchema = z.object({
 });
 
 export function ProgramForm({ isOpen, setIsOpen, program, onSave }: ProgramFormProps) {
-  const [isGeneratingSlug, setIsGeneratingSlug] = React.useState(false);
+  const [isCustomSlug, setIsCustomSlug] = React.useState(false);
   const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -79,28 +80,7 @@ export function ProgramForm({ isOpen, setIsOpen, program, onSave }: ProgramFormP
     }
   }, [program, form, isOpen]);
 
-  const handleGenerateSlug = async () => {
-    const title = form.getValues('title');
-    if (!title) return;
-    setIsGeneratingSlug(true);
-    try {
-      const result = await api.post('generate-slug', { title });
-      if (result.success) {
-        form.setValue('slug', result.slug);
-      } else {
-        toast({
-          variant: 'destructive',
-          title: "Slug generation failed.",
-        });
-      }
-    } catch (error) {
-       toast({
-        variant: 'destructive',
-        title: "Slug generation failed.",
-      });
-    }
-    setIsGeneratingSlug(false);
-  };
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -145,47 +125,72 @@ export function ProgramForm({ isOpen, setIsOpen, program, onSave }: ProgramFormP
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Slug</FormLabel>
-                <div className="flex gap-2">
+
+                <Select
+                  defaultValue={NAV_SLUGS.some(s => s.value === field.value) ? field.value : "custom"}
+                  onValueChange={(val) => {
+                    if (val === "custom") {
+                      setIsCustomSlug(true);
+                      form.setValue("slug", "");
+                    } else {
+                      setIsCustomSlug(false);
+                      form.setValue("slug", val); // <-- SLUG gets exact value like ledarskapsutbildning
+                    }
+                  }}
+                >
                   <FormControl>
-                    <Input {...field} />
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select slug" />
+                    </SelectTrigger>
                   </FormControl>
-                  <Button type="button" variant="outline" onClick={handleGenerateSlug} disabled={isGeneratingSlug}>
-                    {isGeneratingSlug ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      "Generate Slug"
-                    )}
-                  </Button>
-                </div>
+
+                  <SelectContent>
+                    {NAV_SLUGS.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {isCustomSlug && (
+                  <div className="mt-2">
+                    <FormControl>
+                      <Input
+                        placeholder="Enter custom slug"
+                        {...field}
+                      />
+                    </FormControl>
+                  </div>
+                )}
+
                 <FormMessage />
               </FormItem>
             )}
           />
-           <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="LOCAL">Local</SelectItem>
-                      <SelectItem value="EU">EU</SelectItem>
-                      <SelectItem value="INTERNATIONAL">International</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Category</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="LOCAL">Local</SelectItem>
+                    <SelectItem value="EU">EU</SelectItem>
+                    <SelectItem value="INTERNATIONAL">International</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
       )
     },

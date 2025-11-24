@@ -25,14 +25,24 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'www.w3schools.com',
       },
+
+      // LOCAL DEV (if needed)
       {
         protocol: 'http',
         hostname: 'localhost',
         port: '3000',
       },
+
+      // ✨ CLOUDINARY IMAGES
       {
         protocol: 'https',
-        hostname: 'res.cloudinary.com', // ✅ Added Cloudinary support
+        hostname: 'res.cloudinary.com',
+      },
+
+      // ✨ API Image URLs (uploads served from backend)
+      {
+        protocol: 'https',
+        hostname: 'api.mplats.se',
       },
     ],
   },

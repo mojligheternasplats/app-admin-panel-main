@@ -5,7 +5,7 @@ import { Partner } from '@/lib/types';
 async function getPartners(): Promise<Partner[]> {
   try {
     const response = await api.getAll<Partner>('partners'); // ✅ Fetch from API
-    console.log(response.data)
+   
     return response.data; // ✅ Extract items from PaginatedResponse
   } catch (error) {
     console.error("Failed to fetch partners", error);

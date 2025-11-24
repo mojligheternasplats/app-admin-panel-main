@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { auth } from '@/lib/api';
-import { Loader2 } from 'lucide-react';
+import { Loader2,  Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -49,6 +49,8 @@ export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -76,27 +78,28 @@ export default function LoginPage() {
         throw new Error('Login failed: No token received.');
       }
     } catch (error: any) {
-  console.error(error);
-  const msg = String(error?.message || "");
+      console.error(error);
+      const msg = String(error?.message || "");
 
-  let description = "An unexpected error occurred.";
+      let description = "An unexpected error occurred.";
 
-  if (msg.includes("EMAIL_NOT_FOUND")) {
-    description = "This email is not registered.";
-  } else if (msg.includes("WRONG_PASSWORD")) {
-    description = "The password you entered is incorrect.";
-  } else {
-    description = "Invalid email or password.";
-  }
+      if (msg.includes("EMAIL_NOT_FOUND")) {
+        description = "This email is not registered.";
+      } else if (msg.includes("WRONG_PASSWORD")) {
+        description = "The password you entered is incorrect.";
+      } else {
+        description = "Invalid email or password.";
+      }
 
-  toast({
-    variant: 'destructive',
-    title: 'Login Failed',
-    description,
-  });
-} finally {
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description,
+      });
+    } finally {
       setIsLoading(false);
-    }}
+    }
+  }
 
   return (
     <Card className="w-full max-w-md">
@@ -123,7 +126,6 @@ export default function LoginPage() {
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="password"
@@ -131,7 +133,22 @@ export default function LoginPage() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="********" {...field} />
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="********"
+                        {...field}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-2 top-2"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
