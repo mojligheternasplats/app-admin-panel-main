@@ -69,7 +69,7 @@ function ResetPasswordComponent() {
     if (!token) return;
     setIsLoading(true);
     try {
-      await api.post('auth/reset-password', {
+      await api.post('authPassword/reset-password', {
         token,
         password: values.password,
       });

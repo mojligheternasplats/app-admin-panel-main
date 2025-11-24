@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await api.post('auth/forgot-password', values);
+      await api.post('auth/authPassword', values);
       // For security, we always show a success message.
       setIsSubmitted(true);
     } catch (error) {

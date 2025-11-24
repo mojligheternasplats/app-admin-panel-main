@@ -47,8 +47,8 @@ export function AttendanceDataTable({ data: initialData }: DataTableProps) {
     let sortableItems = [...filteredData];
     if (sortConfig !== null) {
       sortableItems.sort((a, b) => {
-        const aValue = a[sortConfig.key];
-        const bValue = b[sortConfig.key];
+        const aValue = a[sortConfig.key] ?? '';
+        const bValue = b[sortConfig.key] ?? '';
         if (aValue < bValue) {
           return sortConfig.direction === 'ascending' ? -1 : 1;
         }
