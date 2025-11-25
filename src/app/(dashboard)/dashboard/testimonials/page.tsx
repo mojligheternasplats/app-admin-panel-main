@@ -16,6 +16,7 @@ async function getTestimonials(): Promise<YouthTestimonial[]> {
 
 export default async function TestimonialsPage() {
   const data = await getTestimonials();
+  console.log("Fetched Testimonials:", data); // --- IGNORE ---
 
   return (
     <div className="flex flex-col gap-8">
