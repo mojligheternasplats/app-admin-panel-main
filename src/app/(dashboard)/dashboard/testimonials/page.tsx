@@ -6,7 +6,7 @@ import { TestimonialDataTable } from '@/components/dashboard/testimonials/data-t
 
 async function getTestimonials(): Promise<YouthTestimonial[]> {
   try {
-    const response = await api.getAll<YouthTestimonial>('testimonials'); // ✅ use getAll
+    const response = await api.getAll<YouthTestimonial>('testimonials/admin'); // ✅ use getAll
     return response; // ✅ extract items from PaginatedResponse
   } catch (error) {
     console.error("Failed to fetch events", error);
@@ -16,7 +16,7 @@ async function getTestimonials(): Promise<YouthTestimonial[]> {
 
 export default async function TestimonialsPage() {
   const data = await getTestimonials();
-  console.log("Fetched Testimonials:", data); // --- IGNORE ---
+
 
   return (
     <div className="flex flex-col gap-8">

@@ -69,7 +69,8 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<YouthTest
     header: ({ column }) => <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>Program</Button>,
     cell: ({ row }) => <div>{row.getValue('program')}</div>,
   },
-  {
+  
+    {
     accessorKey: 'isPublished',
     header: ({ column }) => <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>Status</Button>,
     cell: ({ row }) => {
