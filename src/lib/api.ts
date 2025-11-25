@@ -61,13 +61,22 @@ async function request<T>(
 export const api = {
   // GET /resource?page=1&limit=10
   getAll: async <T>(
-    resource: string,
-    params?: { page?: number; limit?: number; q?: string; sort?: string }
-  ): Promise<PaginatedResponse<T>> => {
-    const query = new URLSearchParams(params as Record<string, string>).toString();
-    const url = `${resource}${query ? `?${query}` : ""}`;
-    return request<PaginatedResponse<T>>(url);
-  },
+  resource: string,
+  params: { page?: number; limit?: number; q?: string; sort?: string } = {}
+): Promise<PaginatedResponse<T>> => {
+  
+  const cleanParams: Record<string, string> = {};
+
+  if (params.page) cleanParams.page = params.page.toString();
+  if (params.limit) cleanParams.limit = params.limit.toString();
+  if (params.q) cleanParams.q = params.q;
+  if (params.sort) cleanParams.sort = params.sort;
+
+  const query = new URLSearchParams(cleanParams).toString();
+  const url = `${resource}${query ? `?${query}` : ""}`;
+
+  return request<PaginatedResponse<T>>(url);
+},
 
   // GET /resource/:id
   getOne: async <T>(resource: string, id: ID): Promise<T> =>
