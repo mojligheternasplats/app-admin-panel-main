@@ -1,6 +1,6 @@
 import { PaginatedResponse, ID } from "../lib/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.mplats.se/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 export const auth = {
   login: async (email: string, password: string): Promise<{ token: string; user: any }> => {
@@ -35,6 +35,7 @@ async function request<T>(
 
   const res = await fetch(`${API_URL}/api/${endpoint}`, {
     ...options,
+      cache: "no-store",
     headers: {
       ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
