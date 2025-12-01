@@ -32,7 +32,8 @@ async function request<T>(
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const isFormData = options.body instanceof FormData;
 
-  const res = await fetch(`${API_URL}/${endpoint}`, {
+
+  const res = await fetch(`${API_URL}/api/${endpoint}`, {
     ...options,
     headers: {
       ...(isFormData ? {} : { "Content-Type": "application/json" }),

@@ -25,6 +25,7 @@ export function MediaDataTable({ data: initialData }: { data: Media[] }) {
   const [data, setData] = React.useState(initialData);
   const [filter, setFilter] = React.useState('');
   const [sortConfig, setSortConfig] = React.useState<{ key: keyof Media; direction: 'ascending' | 'descending' } | null>(null);
+
   const [isUploadModalOpen, setIsUploadModalOpen] = React.useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = React.useState(false);
@@ -45,7 +46,7 @@ const [assignableEntities, setAssignableEntities] = React.useState<{
 
   const { toast } = useToast();
   const router = useRouter();
-
+    console.log("medai--all",data)
   React.useEffect(() => {
     setData(initialData);
   }, [initialData]);

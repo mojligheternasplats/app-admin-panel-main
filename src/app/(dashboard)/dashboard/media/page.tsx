@@ -13,9 +13,10 @@ async function getMedia() {
   }
 }
 
+
 export default async function MediaPage() {
   const data = await getMedia();
-
+console.log("Fetched media data:", data);
   return (
     <div className="flex flex-col gap-8">
       <div>
