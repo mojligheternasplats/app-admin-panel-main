@@ -157,7 +157,7 @@ export default function LoginPage() {
 
             <div className="text-right text-sm">
               <Link href="/forgot-password">
-                <Button variant="link" className="p-0 h-auto">Forgot Password?</Button>
+                <Button type="button" variant="link" className="p-0 h-auto">Forgot Password?</Button>
               </Link>
             </div>
           </CardContent>
@@ -171,7 +171,7 @@ export default function LoginPage() {
             <div className="text-center text-sm">
               Don't have an account?{' '}
               <Link href="/register">
-                <Button variant="link" className="p-0 h-auto">Sign Up</Button>
+                <Button type="button" variant="link" className="p-0 h-auto">Sign Up</Button>
               </Link>
             </div>
           </CardFooter>
