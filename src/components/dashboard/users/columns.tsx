@@ -144,10 +144,34 @@ export const columns = ({ onEdit }: ColumnsProps): ColumnDef<User, any>[] => [
                 <form action={deleteAction}>
                   <input type="hidden" name="id" value={user.id} />
                   <input type="hidden" name="model" value="users" />
-                <input type="hidden" name="token" value={localStorage.getItem("token") ?? ""} /> {/* ✅ Add this line */}
-                  <AlertDialogAction type="submit">Confirm</AlertDialogAction>
+                  <input type="hidden" name="token" value={localStorage.getItem("token") ?? ""} /> {/* ✅ Add this line */}
+                  <AlertDialogAction
+                    onClick={async () => {
+                      try {
+                        const token = localStorage.getItem("token");
+
+                        if (!token) {
+                          throw new Error("No token found");
+                        }
+
+                        const formData = new FormData();
+
+                        formData.append("id", user.id);
+                        formData.append("model", "users");
+                        formData.append("token", token);
+
+                        await deleteAction(formData);
+
+                        console.log("User deleted");
+                      } catch (err) {
+                        console.error("Delete failed:", err);
+                      }
+                    }}
+                  >
+                    Confirm
+                  </AlertDialogAction>
                 </form>
-                
+
 
               </AlertDialogFooter>
             </AlertDialogContent>
