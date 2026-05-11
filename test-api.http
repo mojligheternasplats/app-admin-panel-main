@@ -1,0 +1,13 @@
+### Testar att hämta användare
+GET https://api.mplats.se/api/users
+Authorization: Bearer DIN_TOKEN_HÄR
+
+### Testar att uppdatera en användare (PUT)
+PUT https://api.mplats.se/api/users/cmiriduwj0000p10qiinrewl8
+Content-Type: application/json
+Authorization: Bearer DIN_TOKEN_HÄR
+
+{
+    "firstName": "Husse",
+    "lastName": "Uppdaterad"
+}

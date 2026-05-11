@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.mplats.se/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.mplats.se/api/";
 
 /**
  * Simple fallback slug generator
@@ -22,6 +22,8 @@ function generateSlug(text: string) {
 async function handleDataMutation(formData: FormData, model: string, token: string) {
   const id = formData.get("id") as string | null;
 
+  console.log("MODELL:", model);
+   
   if (!token) throw new Error("Token is required");
 
   const method = id ? "PUT" : "POST";

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { User, PaginatedResponse } from "@/lib/admin-types";
+import { User, PaginatedResponse } from "@/lib/types";
 import { UserDataTable } from "@/components/dashboard/users/data-table";
 
 export default function UsersPage() {

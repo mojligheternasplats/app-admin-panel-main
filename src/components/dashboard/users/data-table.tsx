@@ -19,14 +19,9 @@ interface DataTableProps {
   data?: User[]; // ✅ Gör data valfri för att hantera undefined
   hideControls?: boolean;
 }
-
 export function UserDataTable({ data = [], hideControls = false }: DataTableProps) {
   const [token, setToken] = React.useState("");
   const [filter, setFilter] = React.useState("");
-React.useEffect(() => {
-  const storedToken = localStorage.getItem("token");
-  if (storedToken) setToken(storedToken);
-}, []);
   const [sortConfig, setSortConfig] = React.useState<{
     key: keyof User;
     direction: "ascending" | "descending";
@@ -34,30 +29,44 @@ React.useEffect(() => {
   const [isFormOpen, setIsFormOpen] = React.useState(false);
   const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
 
-const filteredData = React.useMemo(() => {
-  return data.filter((item) => {
-    const fullName = `${item.firstName ?? ""} ${item.lastName ?? ""}`.toLowerCase();
-    const email = item.email?.toLowerCase() ?? "";
+  React.useEffect(() => {
+    setToken(localStorage.getItem("token") || "");
+  }, []);
+
+  // Memoize edit handler för att undvika onödiga omrenderingar av kolumner
+  const handleEdit = React.useCallback((user: User) => {
+    setSelectedUser(user);
+    setIsFormOpen(true);
+  }, []);
+
+  // Memoize kolumner - Kritiskt för prestanda!
+  const columns = React.useMemo(() => 
+    userColumns({ onEdit: handleEdit, token }), 
+    [handleEdit, token]
+  );
+
+  const filteredData = React.useMemo(() => {
     const query = filter.toLowerCase();
-    return fullName.includes(query) || email.includes(query);
-  });
-}, [data, filter]);
+    return data.filter((item) => {
+      const fullName = `${item.firstName ?? ""} ${item.lastName ?? ""}`.toLowerCase();
+      const email = item.email?.toLowerCase() ?? "";
+      return fullName.includes(query) || email.includes(query);
+    });
+  }, [data, filter]);
 
   const sortedData = React.useMemo(() => {
     if (!sortConfig) return filteredData;
 
     return [...filteredData].sort((a, b) => {
-      const aValue = a[sortConfig.key];
-      const bValue = b[sortConfig.key];
+      const aVal = String(a[sortConfig.key] ?? "");
+      const bVal = String(b[sortConfig.key] ?? "");
 
-      const aVal = aValue === undefined || aValue === null ? "" : String(aValue);
-      const bVal = bValue === undefined || bValue === null ? "" : String(bValue);
+      const comparison = aVal.localeCompare(bVal, undefined, { 
+        numeric: true, 
+        sensitivity: "base" 
+      });
 
-      const comparison = aVal.localeCompare(bVal, undefined, { numeric: true, sensitivity: "base" });
-
-      if (comparison < 0) return sortConfig.direction === "ascending" ? -1 : 1;
-      if (comparison > 0) return sortConfig.direction === "ascending" ? 1 : -1;
-      return 0;
+      return sortConfig.direction === "ascending" ? comparison : -comparison;
     });
   }, [filteredData, sortConfig]);
 
@@ -69,10 +78,6 @@ const filteredData = React.useMemo(() => {
     setSortConfig({ key, direction });
   };
 
-  const handleEdit = (user: User) => {
-    setSelectedUser(user);
-    setIsFormOpen(true);
-  };
 
   const handleAddNew = () => {
     setSelectedUser(null);
@@ -85,7 +90,7 @@ const filteredData = React.useMemo(() => {
     toggleAllPageRowsSelected: () => {},
   };
 
-const columns = userColumns({ onEdit: handleEdit, token });
+
   return (
     <div>
       {!hideControls && (
