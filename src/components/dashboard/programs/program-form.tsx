@@ -191,6 +191,23 @@ export function ProgramForm({ isOpen, setIsOpen, program, onSave }: ProgramFormP
               </FormItem>
             )}
           />
+          <FormField
+  control={form.control}
+  name="order"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Order</FormLabel>
+      <FormControl>
+        <Input
+          type="number"
+          value={field.value}
+          onChange={(e) => field.onChange(Number(e.target.value))}
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
         </div>
       )
     },
