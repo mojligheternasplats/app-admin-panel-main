@@ -81,6 +81,17 @@ export function AssignMediaForm({ isOpen, onOpenChange, media, entities }: Assig
     const handleClose = () => {
         if (!isSubmitting) onOpenChange(false);
     };
+    const getItemLabel = (
+        item: News | Event | Project | Partner | HeroSection
+    ): string => {
+        if (selectedType === "PARTNER") {
+            return (item as Partner).name;
+        }
+
+        return (item as News | Event | Project | HeroSection).title;
+    };
+
+
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         setIsSubmitting(true);
 
@@ -188,12 +199,14 @@ export function AssignMediaForm({ isOpen, onOpenChange, media, entities }: Assig
                                             </FormControl>
                                             <SelectContent>
                                                 {itemsToDisplay.length > 0 ? (
-                                                    itemsToDisplay.map(item => (
-                                                        <SelectItem key={item.id} value={item.id}>{item?.slug}</SelectItem>
+                                                    itemsToDisplay.map((item) => (
+                                                        <SelectItem key={item.id} value={item.id}>
+                                                            {getItemLabel(item)}
+                                                        </SelectItem>
                                                     ))
                                                 ) : (
                                                     <div className="px-3 py-2 text-sm text-muted-foreground">
-                                                        No events available
+                                                        No {selectedType?.toLowerCase()} available
                                                     </div>
                                                 )}
                                             </SelectContent>
