@@ -42,10 +42,21 @@ export default function ForgotPasswordPage() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await api.post('authPassword/forgot-password', values);
+      const response = await fetch("https://api.mplats.se/api/authPassword/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       // For security, we always show a success message.
       setIsSubmitted(true);
     } catch (error) {
@@ -53,15 +64,14 @@ export default function ForgotPasswordPage() {
       // We still show success to the user, but log the error.
       setIsSubmitted(true);
       toast({
-        variant: 'destructive',
-        title: 'An unexpected error occurred',
-        description: 'Please try again later.',
+        variant: "destructive",
+        title: "An unexpected error occurred",
+        description: "Please try again later.",
       });
     } finally {
       setIsLoading(false);
     }
   }
-
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
