@@ -41,15 +41,31 @@ interface ProgramFormProps {
 }
 
 const formSchema = z.object({
-  title: z.string().min(2, { message: "Title must be at least 2 characters." }),
+  title: z.string().min(2),
   slug: z.string().optional(),
-  content: z.string().min(10, { message: "Content must be at least 10 characters." }),
+  content: z.string().min(10),
   isPublished: z.boolean(),
-  language: z.enum(['Swedish', 'English']),
+  language: z.enum(["Swedish", "English"]),
   order: z.number().int(),
-  category: z.enum(['LOCAL', 'EU', 'INTERNATIONAL']),
-});
+  category: z.enum(["LOCAL", "EU", "INTERNATIONAL"]),
 
+  program: z
+    .enum([
+      "ERASMUS_PLUS",
+      "NORDPLUS",
+      "EUROPEAN_SOLIDARITY_CORPS",
+      "CREATIVE_EUROPE",
+      "EUROPEAN_SOCIAL_FUND_PLUS",
+      "CERV",
+      "INTERREG",
+      "LIFE",
+      "HORIZON_EUROPE",
+      "EUROPE_FOR_CITIZENS",
+      "Future_Narratives"
+    ])
+    .nullable()
+    .optional(),
+});
 export function ProgramForm({ isOpen, setIsOpen, program, onSave }: ProgramFormProps) {
   const [isCustomSlug, setIsCustomSlug] = React.useState(false);
   const { toast } = useToast();
@@ -63,6 +79,7 @@ export function ProgramForm({ isOpen, setIsOpen, program, onSave }: ProgramFormP
       language: program?.language || 'English',
       order: program?.order || 0,
       category: program?.category || 'LOCAL',
+      program: program?.program || null,
     },
   });
 
@@ -76,6 +93,7 @@ export function ProgramForm({ isOpen, setIsOpen, program, onSave }: ProgramFormP
         language: program?.language || 'English',
         order: program?.order || 0,
         category: program?.category || 'LOCAL',
+        program: program?.program || null,
       });
     }
   }, [program, form, isOpen]);
@@ -168,46 +186,164 @@ export function ProgramForm({ isOpen, setIsOpen, program, onSave }: ProgramFormP
               </FormItem>
             )}
           />
+        <FormField
+  control={form.control}
+  name="category"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Category</FormLabel>
 
+      <Select
+        value={field.value}
+        onValueChange={(value) => {
+          field.onChange(value);
+
+          if (value !== "EU") {
+            form.setValue("program", null);
+          }
+        }}
+      >
+        <FormControl>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a category" />
+          </SelectTrigger>
+        </FormControl>
+
+        <SelectContent>
+          <SelectItem value="LOCAL">Local</SelectItem>
+          <SelectItem value="EU">EU</SelectItem>
+          <SelectItem value="INTERNATIONAL">
+            International
+          </SelectItem>
+        </SelectContent>
+      </Select>
+
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
+<FormField
+  control={form.control}
+  name="program"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>EU Program</FormLabel>
+
+      <Select
+        value={field.value ?? undefined}
+        onValueChange={field.onChange}
+        disabled={form.watch("category") !== "EU"}
+      >
+        <FormControl>
+          <SelectTrigger>
+            <SelectValue placeholder="Select EU program" />
+          </SelectTrigger>
+        </FormControl>
+
+        <SelectContent>
+          <SelectItem value="ERASMUS_PLUS">
+            Erasmus+
+          </SelectItem>
+
+          <SelectItem value="NORDPLUS">
+            Nordplus
+          </SelectItem>
+
+          <SelectItem value="EUROPEAN_SOLIDARITY_CORPS">
+            European Solidarity Corps
+          </SelectItem>
+
+          <SelectItem value="CREATIVE_EUROPE">
+            Creative Europe
+          </SelectItem>
+
+          <SelectItem value="EUROPEAN_SOCIAL_FUND_PLUS">
+            European Social Fund Plus
+          </SelectItem>
+
+          <SelectItem value="CERV">
+            Citizens, Equality, Rights and Values (CERV)
+          </SelectItem>
+
+          <SelectItem value="INTERREG">
+            Interreg
+          </SelectItem>
+
+          <SelectItem value="LIFE">
+            LIFE Programme
+          </SelectItem>
+
+          <SelectItem value="HORIZON_EUROPE">
+            Horizon Europe
+          </SelectItem>
+
+          <SelectItem value="EUROPE_FOR_CITIZENS">
+            Europe for Citizens
+          </SelectItem>
+          
+          <SelectItem value="Future_Narratives">
+           Future Narratives 2
+          </SelectItem>
+        </SelectContent>
+      </Select>
+
+      <FormMessage />
+    </FormItem>
+  )}
+/>
           <FormField
             control={form.control}
             name="category"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Category</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  value={field.value}
+                  onValueChange={(value) => {
+                    field.onChange(value);
+
+                    if (value !== "EU") {
+                      form.setValue("program", null);
+                    }
+                  }}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                   </FormControl>
+
                   <SelectContent>
                     <SelectItem value="LOCAL">Local</SelectItem>
                     <SelectItem value="EU">EU</SelectItem>
-                    <SelectItem value="INTERNATIONAL">International</SelectItem>
+                    <SelectItem value="INTERNATIONAL">
+                      International
+                    </SelectItem>
                   </SelectContent>
                 </Select>
+
                 <FormMessage />
               </FormItem>
             )}
           />
           <FormField
-  control={form.control}
-  name="order"
-  render={({ field }) => (
-    <FormItem>
-      <FormLabel>Order</FormLabel>
-      <FormControl>
-        <Input
-          type="number"
-          value={field.value}
-          onChange={(e) => field.onChange(Number(e.target.value))}
-        />
-      </FormControl>
-      <FormMessage />
-    </FormItem>
-  )}
-/>
+            control={form.control}
+            name="order"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Order</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    value={field.value}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
       )
     },

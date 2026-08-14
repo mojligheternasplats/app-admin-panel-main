@@ -44,7 +44,7 @@ async function request<T>(
     // REMOVE this unless backend uses cookies
     // credentials: "include",
   });
-
+console.log("REQUEST URL =", `${API_URL}/api/${endpoint}`);
   if (!res.ok) {
     const message = await res.text();
     throw new Error(`API error: ${res.status} - ${message}`);

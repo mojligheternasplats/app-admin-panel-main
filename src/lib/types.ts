@@ -76,7 +76,18 @@ export interface News {
   creator?: User;
   media?: Media[];
 }
-
+export type EUProgram =
+  | "ERASMUS_PLUS"
+  | "NORDPLUS"
+  | "EUROPEAN_SOLIDARITY_CORPS"
+  | "CREATIVE_EUROPE"
+  | "EUROPEAN_SOCIAL_FUND_PLUS"
+  | "CERV"
+  | "INTERREG"
+  | "LIFE"
+  | "HORIZON_EUROPE"
+  | "EUROPE_FOR_CITIZENS";
+  "Future Narratives";
 // ---- Projects ----
 
 export interface Project {
@@ -92,7 +103,7 @@ export interface Project {
   createdAt: string;
   updatedAt: string;
   createdById?: string;
-
+  program?: EUProgram | null;
   creator?: User;
   media?: Media[];
 }
